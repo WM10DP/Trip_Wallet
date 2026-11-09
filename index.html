@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e6b73">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Trip Wallet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a phone-width column of "boarding pass" cards on a cool sea-mist ground; one lagoon-teal accent, status colours only for budget state. */
+:root{
+  --bg:#eef2f1;
+  --surface:#ffffff;
+  --surface-2:#f6f8f8;
+  --ink:#13232f;
+  --muted:#5b6a72;
+  --faint:#8d9aa0;
+  --line:#dbe2e1;
+  --accent:#0e6b73;
+  --accent-ink:#ffffff;
+  --accent-soft:#dcecec;
+  --good:#0a8f0a; --good-soft:#e2f3e2;
+  --warn:#b67900; --warn-mark:#fab219; --warn-soft:#fdf1d6;
+  --crit:#d03b3b; --crit-soft:#fbe4e4;
+  --pw:#0e6b73; --pp:#6250d6;
+  --c0:#2a78d6; --c1:#eb6834; --c2:#1baf7a; --c3:#eda100; --c4:#e87ba4; --c5:#008300; --c6:#6250d6; --c7:#e34948;
+  --shadow:0 1px 2px rgba(19,35,47,.06),0 6px 20px rgba(19,35,47,.06);
+  --font-display:"Instrument Serif","Noto Sans Thai",Georgia,serif;
+  --font-body:"Manrope","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:18px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1417; --surface:#162126; --surface-2:#1b282e; --ink:#e7eef0; --muted:#9eadb3; --faint:#71828a; --line:#26353c;
+    --accent:#4fb3b9; --accent-ink:#06282b; --accent-soft:#1d3a3d;
+    --good:#3fbf3f; --good-soft:#163019; --warn:#fab219; --warn-mark:#fab219; --warn-soft:#3a2f12; --crit:#ec6b6b; --crit-soft:#3d1c1c;
+    --pw:#4fb3b9; --pp:#9085e9;
+    --c0:#3987e5; --c1:#d95926; --c2:#199e70; --c3:#c98500; --c4:#d55181; --c5:#008300; --c6:#9085e9; --c7:#e66767;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1417; --surface:#162126; --surface-2:#1b282e; --ink:#e7eef0; --muted:#9eadb3; --faint:#71828a; --line:#26353c;
+  --accent:#4fb3b9; --accent-ink:#06282b; --accent-soft:#1d3a3d;
+  --good:#3fbf3f; --good-soft:#163019; --warn:#fab219; --warn-mark:#fab219; --warn-soft:#3a2f12; --crit:#ec6b6b; --crit-soft:#3d1c1c;
+  --pw:#4fb3b9; --pp:#9085e9;
+  --c0:#3987e5; --c1:#d95926; --c2:#199e70; --c3:#c98500; --c4:#d55181; --c5:#008300; --c6:#9085e9; --c7:#e66767;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+#app{max-width:520px;margin:0 auto;min-height:100%;padding:0 16px calc(110px + env(safe-area-inset-bottom));}
+h1,h2,h3{margin:0;text-wrap:balance}
+.display{font-family:var(--font-display);font-weight:400;letter-spacing:-.01em}
+
+/* Top bar */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(20px + env(safe-area-inset-top)) 0 14px}
+.top h1{font-size:34px;line-height:1.05}
+.top h1 em{font-style:italic;color:var(--accent)}
+.eyebrow{margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.icon-btn{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
+.icon-btn svg{width:20px;height:20px}
+.row-btns{display:flex;gap:8px}
+.sticky{position:sticky;top:0;z-index:5;background:var(--bg);margin:0 -16px;padding:0 16px}
+
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.card h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:12px}
+.card-head h2{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* Boarding pass */
+.pass{display:block;width:100%;text-align:left;border:0;padding:0;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;position:relative}
+.pass-top{display:flex;gap:14px;align-items:center;padding:16px 18px 14px}
+.pass-code{font-weight:800;font-size:26px;letter-spacing:.04em;color:var(--accent);min-width:64px}
+.pass-info{flex:1;min-width:0}
+.pass-name{font-family:var(--font-display);font-size:23px;line-height:1.1;overflow-wrap:anywhere}
+.pass-dates{font-size:12.5px;color:var(--muted);margin-top:2px}
+.perf{position:relative;height:0;border-top:1.5px dashed var(--line);margin:0 18px}
+.perf::before,.perf::after{content:"";position:absolute;top:-10px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.perf::before{left:-28px}.perf::after{right:-28px}
+.pass-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 18px 10px}
+.lbl{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.pass-bottom b{font-size:15px;font-variant-numeric:tabular-nums}
+.pass .meter{margin:2px 18px 16px}
+
+/* Meter */
+.meter{position:relative;height:8px;border-radius:99px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:visible}
+.meter>span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--accent);max-width:100%}
+.meter>span.warn{background:var(--warn-mark)}
+.meter>span.crit{background:var(--crit)}
+.meter>i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.35;border-radius:2px}
+.meter.thin{height:5px}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.pill svg{width:13px;height:13px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.neutral{background:var(--surface-2);color:var(--muted)}
+
+/* Alert */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;font-size:14px}
+.alert svg{flex:none;width:18px;height:18px;margin-top:1px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.warn svg{color:var(--warn)}
+.alert.crit{background:var(--crit-soft);color:var(--ink)} .alert.crit svg{color:var(--crit)}
+.alert.info{background:var(--accent-soft);color:var(--ink)} .alert.info svg{color:var(--accent)}
+
+/* Trip header */
+.trip-head{padding:calc(14px + env(safe-area-inset-top)) 0 10px;display:flex;align-items:center;gap:10px}
+.trip-head .t{flex:1;min-width:0}
+.trip-head .t .code{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
+.trip-head .t h1{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.05;overflow-wrap:anywhere}
+.trip-head .t p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border-radius:14px;padding:4px;box-shadow:inset 0 0 0 1px var(--line);margin-bottom:14px}
+.tabs button{border:0;background:transparent;padding:9px 0;border-radius:10px;font-weight:700;font-size:14px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* Big number */
+.big{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat-grid b{display:block;font-size:15px;font-variant-numeric:tabular-nums;margin-top:2px}
+
+/* Charts */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--muted);font-family:var(--font-body);font-size:10.5px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:8px;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));opacity:0;transition:opacity .12s;z-index:3}
+.tip.on{opacity:1}
+.tip b{font-variant-numeric:tabular-nums}
+.donut-wrap{display:flex;flex-direction:column;gap:14px}
+.donut-wrap .chart{width:180px;margin:0 auto}
+.legend{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.legend li{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;font-size:13.5px;padding:5px 6px;border-radius:8px}
+.legend li.hl{background:var(--surface-2)}
+.sw{width:12px;height:12px;border-radius:4px}
+.legend .amt{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.legend .pct{display:block;font-size:11.5px;font-weight:500;color:var(--muted)}
+.legend .capline{grid-column:2 / 4;display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)}
+.legend .capline .meter{flex:1}
+.key{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:14px;height:10px;border-radius:3px}
+.key i.dash{height:0;border-top:2px dashed var(--muted);border-radius:0}
+
+/* Expense list */
+.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.search{display:flex;gap:8px}
+.search input,.search select{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:14px}
+.search select{flex:0 0 auto}
+.day-group h3{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 4px 8px}
+.list{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.item{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:12px 14px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;position:relative;overflow:hidden}
+.ico::before{content:"";position:absolute;inset:0;background:currentColor;opacity:.16}
+.ico span{position:relative}
+.item .ttl{font-weight:600;overflow-wrap:anywhere}
+.item .meta{font-size:12.5px;color:var(--muted)}
+.item .amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .amt small{display:block;font-weight:500;font-size:11.5px;color:var(--muted)}
+.who{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:800;color:#fff;vertical-align:-3px;margin-right:2px}
+.who.W{background:var(--pw)} .who.P{background:var(--pp)}
+:root[data-theme="dark"] .who{color:#0d1417}
+.item.transfer .ttl{color:var(--muted)}
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty h3{font-family:var(--font-display);font-weight:400;font-size:26px;color:var(--ink);margin-bottom:6px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:13px 18px;font-weight:700;font-size:15px;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.danger{background:transparent;color:var(--crit);box-shadow:inset 0 0 0 1px var(--crit-soft)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5}
+.btn svg{width:18px;height:18px}
+.fab{position:fixed;z-index:6;right:max(16px,calc(50% - 244px));bottom:calc(18px + env(safe-area-inset-bottom));border-radius:99px;padding:15px 22px;box-shadow:0 8px 24px rgba(14,107,115,.35)}
+
+/* Settle */
+.settle{display:flex;align-items:center;gap:14px}
+.settle .arrow{flex:1;display:flex;align-items:center;gap:6px;color:var(--muted)}
+.settle .arrow::before{content:"";flex:1;border-top:1.5px dashed var(--line)}
+.avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-size:17px;flex:none}
+.avatar.W{background:var(--pw)} .avatar.P{background:var(--pp)}
+.person{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;font-weight:600;max-width:96px;text-align:center}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:right;font-weight:700;padding:6px 4px}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:9px 4px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--good)} .neg{color:var(--crit)}
+
+/* Sheets */
+.backdrop{position:fixed;inset:0;background:rgba(9,20,26,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+.sheet{background:var(--surface);width:100%;max-width:520px;max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:10px 18px calc(20px + env(safe-area-inset-bottom));animation:up .2s ease-out}
+.sheet .grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.sheet h2{font-family:var(--font-display);font-weight:400;font-size:27px;margin-bottom:14px}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.backdrop,.sheet{animation:none}.tip{transition:none}}
+.form{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.field>.flabel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:11px 12px;font-size:16px}
+.field textarea{min-height:64px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.amount-row{display:grid;grid-template-columns:1fr 110px;gap:10px}
+.amount-row input{font-size:28px!important;font-weight:800;font-variant-numeric:tabular-nums}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;box-shadow:inset 0 0 0 1px var(--line);gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 4px;font-weight:700;font-size:13.5px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.catpick{display:flex;flex-wrap:wrap;gap:6px}
+.catpick button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 11px;font-size:13.5px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.catpick button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.actions{display:flex;gap:10px;margin-top:4px}
+.actions .btn{flex:1}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.cat-edit{display:grid;grid-template-columns:52px 1fr 40px;gap:8px;align-items:center}
+.cat-edit input{padding:9px 10px!important}
+.cat-edit .ic{text-align:center;font-size:20px!important}
+.swatches{grid-column:2 / 4;display:flex;gap:6px;margin-bottom:6px}
+.swatches button{width:24px;height:24px;border-radius:7px;border:2px solid transparent}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.sep{border:0;border-top:1px solid var(--line);margin:6px 0}
+.img-preview{width:100%;border-radius:14px;box-shadow:var(--shadow);display:block;-webkit-touch-callout:default}
+
+/* Toast */
+#toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;gap:8px;width:min(480px,calc(100% - 32px));pointer-events:none}
+.toast{pointer-events:auto;display:flex;gap:10px;align-items:flex-start;background:var(--ink);color:var(--surface);padding:12px 14px;border-radius:14px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:fade .2s}
+.toast svg{flex:none;width:18px;height:18px;margin-top:1px}
+.toast.warn svg{color:var(--warn-mark)} .toast.crit svg{color:#ff8a8a} .toast.good svg{color:#7fdc7f}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.sync.live i{background:var(--good)} .sync.connecting i{background:var(--warn-mark)} .sync.readonly i{background:var(--crit)}
+.loading{display:grid;place-items:center;min-height:60vh;color:var(--muted);text-align:center}
+.foot-note{text-align:center;font-size:12px;color:var(--faint);margin:22px 0 0}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading"><div><p class="eyebrow">Trip Wallet</p><p>Opening your trips…</p></div></div></div>
+<div id="sheet-root"></div>
+<div id="toast" aria-live="polite"></div>
+<script>
+"use strict";
+/* ---------- constants ---------- */
+const CURRENCIES=["THB","USD","EUR","GBP","JPY","KRW","CNY","HKD","TWD","SGD","MYR","VND","LAK","KHR","IDR","PHP","INR","AUD","NZD","CHF","CAD","AED"];
+const CAT_LIGHT=["#2a78d6","#eb6834","#1baf7a","#eda100","#e87ba4","#008300","#6250d6","#e34948"];
+const PEOPLE_IDS=["W","P"];
+const DEFAULT_CONFIG={
+  people:{W:{name:"Wiphoosana"},P:{name:"Phanthipha"}},
+  categories:[
+    {id:"food",name:"Food & drinks",icon:"🍜",color:0},
+    {id:"transport",name:"Transport",icon:"🚆",color:1},
+    {id:"stay",name:"Stay",icon:"🏨",color:2},
+    {id:"activity",name:"Activities",icon:"🎟️",color:3},
+    {id:"shopping",name:"Shopping",icon:"🛍️",color:4},
+    {id:"other",name:"Other",icon:"📌",color:5}
+  ]
+};
+const LS_KEY="tripwallet.v1", LS_ME="tripwallet.me";
+const ICONS={
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v6M12 16.5h.01"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5h.01"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  swap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg>'
+};
+
+/* ---------- helpers ---------- */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function pd(s){if(!s)return null;const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function todayStr(){return ymd(new Date());}
+function fmtDate(s,withYear){const d=pd(s);if(!d)return "";return d.getDate()+" "+MONTHS[d.getMonth()]+(withYear?" "+d.getFullYear():"");}
+function fmtDay(s){const d=pd(s);return WD[d.getDay()]+" "+d.getDate()+" "+MONTHS[d.getMonth()];}
+function daysBetween(a,b){return Math.round((pd(b)-pd(a))/86400000);}
+function tripDays(t){if(!t.start||!t.end)return 1;return Math.max(1,daysBetween(t.start,t.end)+1);}
+function dateRange(t){const out=[];if(!t.start||!t.end)return out;let d=pd(t.start);const e=pd(t.end);let guard=0;while(d<=e&&guard<400){out.push(ymd(d));d.setDate(d.getDate()+1);guard++;}return out;}
+const fmtCache={};
+function fmt(n,cur,opts={}){
+  cur=cur||"THB";const frac=!opts.whole&&!opts.compact&&Math.abs(n-Math.round(n))>=0.005;const key=cur+(opts.compact?"c":"")+(opts.whole?"w":"")+(frac?"f":"");
+  if(!fmtCache[key]){
+    try{
+      const base=new Intl.NumberFormat("en-US",{style:"currency",currency:cur,currencyDisplay:"narrowSymbol"});
+      const maxd=base.resolvedOptions().maximumFractionDigits;
+      fmtCache[key]=new Intl.NumberFormat("en-US",{style:"currency",currency:cur,currencyDisplay:"narrowSymbol",minimumFractionDigits:frac?maxd:0,maximumFractionDigits:frac?maxd:0,notation:opts.compact?"compact":"standard"});
+    }catch(e){fmtCache[key]={format:v=>cur+" "+Number(v).toLocaleString("en-US",{maximumFractionDigits:2})};}
+  }
+  return fmtCache[key].format(Math.abs(n)<0.005?0:n);
+}
+function round2(n){return Math.round(n*100)/100;}
+function parseNum(v){if(v==null)return NaN;const n=parseFloat(String(v).replace(/[,\s]/g,""));return isFinite(n)?n:NaN;}
+function codeFor(t){return (t.code||(t.destination||t.name||"TRP").replace(/[^A-Za-z]/g,"").slice(0,3)||"TRP").toUpperCase();}
+
+/* ---------- state ---------- */
+const S={
+  view:"home",tripId:null,tab:"overview",
+  filter:{cat:"all",who:"all",q:""},
+  data:{trips:{},expenses:{},config:clone(DEFAULT_CONFIG)},
+  mode:"local",sync:"local",readonly:false,ready:false,
+  me:lsGet(LS_ME)||"W",lastDate:null
+};
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function cfg(){const c=S.data.config||{};return {people:Object.assign(clone(DEFAULT_CONFIG.people),c.people||{}),categories:(c.categories&&c.categories.length)?c.categories:DEFAULT_CONFIG.categories};}
+function pname(id){return cfg().people[id]?.name||id;}
+function pinit(id){return (pname(id)||id).trim().charAt(0).toUpperCase()||id;}
+function catById(id){const cs=cfg().categories;return cs.find(c=>c.id===id)||cs.find(c=>c.id==="other")||cs[cs.length-1];}
+function catColor(c){return "var(--c"+((c?.color??5)%8)+")";}
+
+/* ---------- storage: local or shared cloud ---------- */
+let DB=null;
+const Store={
+  async saveTrip(t){t.updatedAt=Date.now();S.data.trips[t.id]=t;render();return this._write("trips",t.id,t);},
+  async deleteTrip(id){
+    const exps=Object.values(S.data.expenses).filter(e=>e.tripId===id);
+    delete S.data.trips[id];exps.forEach(e=>delete S.data.expenses[e.id]);render();
+    for(const e of exps){await this._del("expenses",e.id);}
+    return this._del("trips",id);
+  },
+  async saveExpense(e){e.updatedAt=Date.now();e.by=S.me;S.data.expenses[e.id]=e;render();return this._write("expenses",e.id,e);},
+  async deleteExpense(id){delete S.data.expenses[id];render();return this._del("expenses",id);},
+  async saveConfig(c){S.data.config=c;render();return this._write("config","main",c);},
+  async _write(col,id,body){
+    if(S.mode==="local"){persistLocal();return true;}
+    try{await DB.doc(col+"/"+id).set(JSON.parse(JSON.stringify(body)));return true;}
+    catch(err){return handleWriteErr(err,()=>DB.doc(col+"/"+id).set(JSON.parse(JSON.stringify(body))));}
+  },
+  async _del(col,id){
+    if(S.mode==="local"){persistLocal();return true;}
+    try{await DB.doc(col+"/"+id).delete();return true;}
+    catch(err){return handleWriteErr(err,()=>DB.doc(col+"/"+id).delete());}
+  }
+};
+async function handleWriteErr(err,retry){
+  const code=err&&err.code;
+  if(code==="unavailable"){await new Promise(r=>setTimeout(r,600+Math.random()*900));try{await retry();return true;}catch(e2){toast("Couldn't save. Check your connection and try again.","crit");return false;}}
+  if(code==="invalid_argument"||code==="not_granted"){S.readonly=true;S.sync="readonly";render();toast("You can view this wallet but not edit it. Ask the owner to invite you as an Editor.","crit");return false;}
+  if(code==="quota_exceeded"){toast("Storage is full. Delete an old trip to make room.","crit");return false;}
+  toast("Couldn't save: "+(err&&err.message||"unknown error"),"crit");return false;
+}
+function persistLocal(){lsSet(LS_KEY,JSON.stringify(S.data));}
+function loadLocal(){
+  try{const raw=lsGet(LS_KEY);if(raw){const d=JSON.parse(raw);S.data={trips:d.trips||{},expenses:d.expenses||{},config:d.config||clone(DEFAULT_CONFIG)};}}catch(e){}
+}
+
+async function boot(){
+  let db=null;
+  if(window.claude&&typeof window.claude.use==="function"){
+    try{db=await window.claude.use("db");}catch(e){db=null;}
+  }
+  if(!db){S.mode="local";S.sync="local";loadLocal();S.ready=true;render();return;}
+  DB=db;S.mode="cloud";S.sync="connecting";S.data={trips:{},expenses:{},config:null};
+  let got={trips:false,expenses:false,config:false};
+  const timer=setTimeout(()=>{if(!S.ready){S.ready=true;S.sync="offline";render();}},10000);
+  const done=()=>{if(got.trips&&got.expenses&&got.config){S.ready=true;if(S.sync!=="readonly")S.sync="live";clearTimeout(timer);}render();};
+  const onErr=e=>{clearTimeout(timer);S.ready=true;S.sync="offline";render();};
+  db.collection("trips").onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{if(d.exists)o[d.id]=Object.assign({},d.data(),{id:d.id});});S.data.trips=o;if(!snap.metadata.fromCache)got.trips=true;done();},onErr);
+  db.collection("expenses").onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{if(d.exists)o[d.id]=Object.assign({},d.data(),{id:d.id});});S.data.expenses=o;if(!snap.metadata.fromCache)got.expenses=true;done();},onErr);
+  db.doc("config/main").onSnapshot(snap=>{S.data.config=snap.exists?clone(snap.data()):null;if(!snap.metadata.fromCache)got.config=true;done();},onErr);
+}
+
+/* ---------- calculations ---------- */
+function baseAmt(e){return (Number(e.amount)||0)*(e.currency&&e.rate?Number(e.rate):1);}
+function wShare(e){if(e.split==="W")return 1;if(e.split==="P")return 0;if(e.split==="custom")return Math.min(100,Math.max(0,Number(e.wPct)||0))/100;return 0.5;}
+function tripExpenses(id){return Object.values(S.data.expenses).filter(e=>e.tripId===id);}
+function calc(trip){
+  const all=tripExpenses(trip.id);
+  const exps=all.filter(e=>e.kind!=="transfer"), transfers=all.filter(e=>e.kind==="transfer");
+  let total=0;const byCat={},byDay={},paid={W:0,P:0},share={W:0,P:0};
+  for(const e of exps){
+    const a=baseAmt(e);total+=a;
+    byCat[e.category]=(byCat[e.category]||0)+a;
+    byDay[e.date]=(byDay[e.date]||0)+a;
+    if(paid[e.paidBy]!=null)paid[e.paidBy]+=a;
+    const ws=wShare(e);share.W+=a*ws;share.P+=a*(1-ws);
+  }
+  const net={W:paid.W-share.W,P:paid.P-share.P};
+  let settled=0;
+  for(const t of transfers){const a=baseAmt(t);if(net[t.from]!=null)net[t.from]+=a;if(net[t.to]!=null)net[t.to]-=a;settled+=a;}
+  const budget=Number(trip.budget)||0, warnAt=Number(trip.warnAt)||80;
+  const pct=budget>0?total/budget*100:0;
+  const status=budget<=0?"none":pct>=100?"crit":pct>=warnAt?"warn":"good";
+  const days=tripDays(trip);
+  const t=todayStr();
+  let daysLeft=0;
+  if(trip.start&&trip.end){ if(t<trip.start)daysLeft=days; else if(t<=trip.end)daysLeft=daysBetween(t,trip.end)+1; }
+  const daysElapsed=trip.start?Math.min(days,Math.max(0,t<trip.start?0:daysBetween(trip.start,t>trip.end?trip.end:t)+1)):days;
+  return {exps,transfers,total,byCat,byDay,paid,share,net,settled,budget,warnAt,pct,status,days,daysLeft,daysElapsed,left:budget-total};
+}
+function statusPill(st,pct){
+  if(st==="none")return '<span class="pill neutral">No cap set</span>';
+  if(st==="crit")return '<span class="pill crit">'+ICONS.stop+'Over budget</span>';
+  if(st==="warn")return '<span class="pill warn">'+ICONS.warn+'Near limit</span>';
+  return '<span class="pill good">'+ICONS.check+'On track</span>';
+}
+function meterHTML(pct,st,warnAt,thin){
+  const w=Math.min(100,pct);
+  return '<div class="meter'+(thin?" thin":"")+'" role="img" aria-label="'+Math.round(pct)+'% of budget used">'+(warnAt?'<i style="left:calc('+warnAt+'% - 1px)"></i>':"")+'<span class="'+(st==="crit"?"crit":st==="warn"?"warn":"")+'" style="width:'+w+'%"></span></div>';
+}
+
+/* ---------- render ---------- */
+const app=$("#app");
+function render(){
+  if(!S.ready){return;}
+  const sy=window.scrollY;
+  if(S.view==="trip"&&S.data.trips[S.tripId])app.innerHTML=renderTrip(S.data.trips[S.tripId]);
+  else{S.view="home";app.innerHTML=renderHome();}
+  window.scrollTo(0,sy);
+  bindCharts();
+}
+function syncBadge(){
+  const m={local:["local","Saved on this device"],connecting:["connecting","Syncing…"],live:["live","Shared · live"],offline:["readonly","Offline, may be out of date"],readonly:["readonly","View only"]}[S.sync]||["local",""];
+  return '<span class="sync '+m[0]+'"><i></i>'+m[1]+'</span>';
+}
+function renderHome(){
+  const trips=Object.values(S.data.trips).sort((a,b)=>(b.start||"").localeCompare(a.start||""));
+  const c=cfg();
+  let h='<header class="top"><div><p class="eyebrow">Trip Wallet</p><h1 class="display">'+esc(c.people.W.name)+' <em>&amp;</em> '+esc(c.people.P.name)+'</h1><div style="margin-top:8px">'+syncBadge()+'</div></div><button class="icon-btn" data-act="settings" aria-label="Settings">'+ICONS.gear+'</button></header>';
+  if(S.readonly)h+='<div class="alert crit" style="margin-bottom:14px">'+ICONS.stop+'<div>You can view this wallet but not change it. Ask the owner to invite you as an Editor.</div></div>';
+  h+='<section class="stack">';
+  if(!trips.length){
+    h+='<div class="card empty"><h3>Where to next?</h3><p>Create a trip, set a spending cap, and log what you both spend along the way.</p><div class="actions" style="flex-direction:column"><button class="btn" data-act="new-trip">'+ICONS.plus+'Plan a trip</button><button class="btn ghost" data-act="load-sample">Load an example trip</button></div></div>';
+  }
+  for(const t of trips){
+    const r=calc(t);
+    h+='<button class="pass" data-act="open-trip" data-id="'+esc(t.id)+'"><div class="pass-top"><div class="pass-code">'+esc(codeFor(t))+'</div><div class="pass-info"><div class="pass-name">'+esc(t.name)+'</div><div class="pass-dates">'+esc(fmtDate(t.start))+' → '+esc(fmtDate(t.end,true))+' · '+r.days+' day'+(r.days>1?"s":"")+'</div><div style="margin-top:8px">'+statusPill(r.status,r.pct)+'</div></div></div><div class="perf"></div><div class="pass-bottom"><div><span class="lbl">Spent</span><b>'+fmt(r.total,t.currency,{whole:true})+'</b></div><div><span class="lbl">Budget</span><b>'+(r.budget?fmt(r.budget,t.currency,{whole:true}):"—")+'</b></div><div><span class="lbl">'+(r.left<0?"Over":"Left")+'</span><b class="'+(r.left<0?"neg":"")+'">'+(r.budget?fmt(Math.abs(r.left),t.currency,{whole:true}):"—")+'</b></div></div>'+(r.budget?meterHTML(r.pct,r.status,r.warnAt):'<div style="height:6px"></div>')+'</button>';
+  }
+  h+='</section>';
+  if(trips.length&&!S.readonly)h+='<button class="btn fab" data-act="new-trip">'+ICONS.plus+'New trip</button>';
+  h+='<p class="foot-note">'+(S.mode==="cloud"?"Trips sync between everyone this page is shared with.":"Trips are saved in this browser.")+'</p>';
+  return h;
+}
+function renderTrip(t){
+  const r=calc(t);
+  let h='<div class="sticky"><header class="trip-head"><button class="icon-btn" data-act="home" aria-label="All trips">'+ICONS.back+'</button><div class="t"><div class="code">'+esc(codeFor(t))+' · '+esc(t.currency)+'</div><h1>'+esc(t.name)+'</h1><p>'+esc(t.destination?t.destination+" · ":"")+esc(fmtDate(t.start))+' → '+esc(fmtDate(t.end,true))+'</p></div><div class="row-btns"><button class="icon-btn" data-act="export" aria-label="Save summary image">'+ICONS.share+'</button>'+(S.readonly?"":'<button class="icon-btn" data-act="edit-trip" aria-label="Edit trip">'+ICONS.edit+'</button>')+'</div></header>';
+  h+='<nav class="tabs" role="tablist">'+[["overview","Summary"],["list","Expenses"],["split","Split"]].map(([k,l])=>'<button role="tab" data-act="tab" data-tab="'+k+'" aria-selected="'+(S.tab===k)+'">'+l+'</button>').join("")+'</nav></div>';
+  if(S.tab==="overview")h+=renderOverview(t,r);
+  else if(S.tab==="list")h+=renderList(t,r);
+  else h+=renderSplit(t,r);
+  if(!S.readonly)h+='<button class="btn fab" data-act="add-exp">'+ICONS.plus+'Add expense</button>';
+  return h;
+}
+function budgetAlert(t,r){
+  if(r.status==="crit")return '<div class="alert crit">'+ICONS.stop+'<div><b>Over budget by '+fmt(-r.left,t.currency)+'.</b> You have spent '+Math.round(r.pct)+'% of the '+fmt(r.budget,t.currency,{whole:true})+' cap.</div></div>';
+  if(r.status==="warn"){
+    const per=r.daysLeft>0?' That leaves about <b>'+fmt(r.left/r.daysLeft,t.currency,{whole:true})+' a day</b> for the '+r.daysLeft+' day'+(r.daysLeft>1?"s":"")+' left.':"";
+    return '<div class="alert warn">'+ICONS.warn+'<div><b>'+Math.round(r.pct)+'% of the budget used.</b> '+fmt(r.left,t.currency)+' left.'+per+'</div></div>';
+  }
+  return "";
+}
+function renderOverview(t,r){
+  const cur=t.currency;
+  let h='<section class="stack">';
+  h+=budgetAlert(t,r);
+  const allowance=r.budget?r.budget/r.days:0;
+  const avg=r.daysElapsed>0?r.total/r.daysElapsed:r.total;
+  h+='<div class="card"><div class="card-head"><h2>Spent so far</h2>'+statusPill(r.status,r.pct)+'</div><div class="big">'+fmt(r.total,cur)+'</div><p class="muted small" style="margin:6px 0 12px">'+(r.budget?Math.round(r.pct)+'% of '+fmt(r.budget,cur,{whole:true})+' cap · warning at '+r.warnAt+'%':'No spending cap. Add one from Edit trip.')+'</p>'+(r.budget?meterHTML(r.pct,r.status,r.warnAt):"")+'<div class="stat-grid"><div><span class="lbl">'+(r.left<0?"Over by":"Left")+'</span><b class="'+(r.left<0?"neg":"")+'">'+(r.budget?fmt(Math.abs(r.left),cur,{whole:true}):"—")+'</b></div><div><span class="lbl">Avg / day</span><b>'+fmt(avg,cur,{whole:true})+'</b></div><div><span class="lbl">Allowance / day</span><b>'+(allowance?fmt(allowance,cur,{whole:true}):"—")+'</b></div></div></div>';
+  if(!r.exps.length){
+    h+='<div class="card empty"><h3>Nothing logged yet</h3><p>Tap <b>Add expense</b> to log the first meal, ticket or taxi.</p></div></section>';return h;
+  }
+  h+='<div class="card"><h2>By category</h2>'+donutHTML(t,r)+'</div>';
+  h+='<div class="card"><h2>By day</h2>'+dailyHTML(t,r,allowance)+'</div>';
+  h+='<div class="card"><div class="card-head"><h2>Who paid</h2><button class="chip" data-act="tab" data-tab="split">See split</button></div>'+whoPaidBars(t,r)+'</div>';
+  h+='</section>';
+  return h;
+}
+function donutHTML(t,r){
+  const cats=cfg().categories;
+  const rows=Object.entries(r.byCat).map(([id,v])=>({c:catById(id),v,id})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  // merge any unknown ids into their resolved category
+  const merged=[];rows.forEach(x=>{const m=merged.find(y=>y.c.id===x.c.id);if(m)m.v+=x.v;else merged.push({c:x.c,v:x.v});});
+  const total=r.total||1,R=58,C=2*Math.PI*R,gap=merged.length>1?2.5:0;
+  let off=0,segs="";
+  merged.forEach((x,i)=>{
+    const len=x.v/total*C;const dash=Math.max(0.5,len-gap);
+    segs+='<circle cx="75" cy="75" r="'+R+'" fill="none" stroke="'+catColor(x.c)+'" stroke-width="20" stroke-dasharray="'+dash+' '+(C-dash)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 75 75)" data-tip="'+esc('<b>'+esc(x.c.name)+'</b> · '+fmt(x.v,t.currency,{whole:true})+' · '+Math.round(x.v/total*100)+'%')+'" data-seg="'+i+'" style="cursor:pointer"/>';
+    off+=len;
+  });
+  const caps=t.catCaps||{};
+  let leg='<ul class="legend">';
+  merged.forEach((x,i)=>{
+    const cap=Number(caps[x.c.id])||0;
+    let capline="";
+    if(cap>0){const p=x.v/cap*100;const st=p>=100?"crit":p>=(Number(t.warnAt)||80)?"warn":"good";capline='<div class="capline">'+meterHTML(p,st,0,true)+'<span class="num">'+Math.round(p)+'% of '+fmt(cap,t.currency,{compact:true})+'</span></div>';}
+    leg+='<li data-seg="'+i+'"><span class="sw" style="background:'+catColor(x.c)+'"></span><span>'+esc(x.c.icon||"")+' '+esc(x.c.name)+'</span><span class="amt">'+fmt(x.v,t.currency,{whole:true})+'<span class="pct">'+Math.round(x.v/total*100)+'%</span></span>'+capline+'</li>';
+  });
+  // categories with caps but no spend
+  cats.forEach(c=>{const cap=Number(caps[c.id])||0;if(cap>0&&!merged.find(x=>x.c.id===c.id))leg+='<li><span class="sw" style="background:'+catColor(c)+'"></span><span>'+esc(c.icon||"")+' '+esc(c.name)+'</span><span class="amt">'+fmt(0,t.currency)+'<span class="pct">0%</span></span><div class="capline">'+meterHTML(0,"good",0,true)+'<span class="num">0% of '+fmt(cap,t.currency,{compact:true})+'</span></div></li>';});
+  leg+='</ul>';
+  return '<div class="donut-wrap"><div class="chart" data-chart="donut"><svg viewBox="0 0 150 150" role="img" aria-label="Spending by category"><circle cx="75" cy="75" r="'+R+'" fill="none" stroke="var(--surface-2)" stroke-width="20"/>'+segs+'<text x="75" y="70" text-anchor="middle" style="font-size:10px;letter-spacing:.1em">TOTAL</text><text x="75" y="88" text-anchor="middle" style="fill:var(--ink);font-size:15px;font-weight:800">'+esc(fmt(r.total,t.currency,{compact:true}))+'</text></svg><div class="tip"></div></div>'+leg+'</div>';
+}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;const m=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10;return m*p;}
+function dailyHTML(t,r,allowance){
+  let days=dateRange(t);
+  const extra=Object.keys(r.byDay).filter(d=>!days.includes(d));
+  days=days.concat(extra).sort();
+  if(days.length>60)days=days.slice(-60);
+  const vals=days.map(d=>r.byDay[d]||0);
+  const W=340,H=170,L=38,Rm=6,T=14,B=24,pw=W-L-Rm,ph=H-T-B;
+  const maxV=niceMax(Math.max(...vals,allowance||0)*1.08);
+  const step=pw/days.length,bw=Math.max(3,Math.min(26,step*0.62));
+  let g="";
+  [0,0.5,1].forEach(f=>{const y=T+ph-f*ph;g+='<line class="grid" x1="'+L+'" x2="'+(W-Rm)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(L-6)+'" y="'+(y+3.5)+'" text-anchor="end">'+esc(fmt(maxV*f,t.currency,{compact:true}))+'</text>';});
+  let bars="",labels="";const every=Math.ceil(days.length/10);
+  let maxI=vals.indexOf(Math.max(...vals));
+  days.forEach((d,i)=>{
+    const v=vals[i],x=L+step*i+step/2,hgt=v/maxV*ph,y=T+ph-hgt;
+    const over=allowance&&v>allowance;
+    const fill=over?"var(--crit)":"var(--accent)";
+    if(v>0){const rr=Math.min(4,bw/2,hgt);bars+='<path d="M'+(x-bw/2)+','+(T+ph)+' V'+(y+rr)+' Q'+(x-bw/2)+','+y+' '+(x-bw/2+rr)+','+y+' H'+(x+bw/2-rr)+' Q'+(x+bw/2)+','+y+' '+(x+bw/2)+','+(y+rr)+' V'+(T+ph)+' Z" fill="'+fill+'"/>';}
+    bars+='<rect x="'+(x-step/2)+'" y="'+T+'" width="'+step+'" height="'+ph+'" fill="transparent" data-tip="'+esc('<b>'+fmtDay(d)+'</b> · '+fmt(v,t.currency,{whole:true})+(over?' · over allowance':''))+'" data-tx="'+x+'" data-ty="'+Math.min(y,T+ph-4)+'" style="cursor:pointer"/>';
+    if(i%every===0||i===days.length-1&&days.length<=10)labels+='<text x="'+x+'" y="'+(H-8)+'" text-anchor="middle">'+pd(d).getDate()+'</text>';
+    if(i===maxI&&v>0)labels+='<text x="'+x+'" y="'+(y-4)+'" text-anchor="middle" style="fill:var(--ink);font-weight:700">'+esc(fmt(v,t.currency,{compact:true}))+'</text>';
+  });
+  let al="";
+  if(allowance){const y=T+ph-allowance/maxV*ph;al='<line x1="'+L+'" x2="'+(W-Rm)+'" y1="'+y+'" y2="'+y+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>';}
+  const hasOver=allowance&&vals.some(v=>v>allowance);
+  return '<div class="chart" data-chart="bars"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Spending per day">'+g+al+bars+labels+'</svg><div class="tip"></div></div><div class="key"><span><i style="background:var(--accent)"></i>Daily spend</span>'+(allowance?'<span><i class="dash"></i>Allowance '+esc(fmt(allowance,t.currency,{whole:true}))+'/day</span>':"")+(hasOver?'<span><i style="background:var(--crit)"></i>Over allowance</span>':"")+'</div>';
+}
+function whoPaidBars(t,r){
+  const max=Math.max(r.paid.W,r.paid.P,r.share.W,r.share.P,1);
+  let h='<div class="stack" style="gap:12px">';
+  PEOPLE_IDS.forEach(id=>{
+    const col=id==="W"?"var(--pw)":"var(--pp)";
+    h+='<div><div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:5px"><span><span class="who '+id+'">'+esc(pinit(id))+'</span> '+esc(pname(id))+'</span><b class="num">'+fmt(r.paid[id],t.currency,{whole:true})+'</b></div><div style="display:flex;flex-direction:column;gap:3px"><div style="height:10px;border-radius:0 4px 4px 0;background:'+col+';width:'+(r.paid[id]/max*100)+'%"></div><div style="height:10px;border-radius:0 4px 4px 0;background:transparent;box-shadow:inset 0 0 0 1.5px '+col+';width:'+(Math.max(r.share[id]/max*100,0.5))+'%"></div></div><div class="small muted" style="margin-top:3px">Fair share '+fmt(r.share[id],t.currency,{whole:true})+'</div></div>';
+  });
+  h+='</div><div class="key"><span><i style="background:var(--muted)"></i>Paid</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--muted)"></i>Fair share</span></div>';
+  return h;
+}
+function renderList(t,r){
+  const cats=cfg().categories,f=S.filter;
+  let h='<div class="filters"><div class="chips"><button class="chip" data-act="fcat" data-cat="all" aria-pressed="'+(f.cat==="all")+'">All</button>'+cats.map(c=>'<button class="chip" data-act="fcat" data-cat="'+esc(c.id)+'" aria-pressed="'+(f.cat===c.id)+'">'+esc(c.icon||"")+' '+esc(c.name)+'</button>').join("")+'<button class="chip" data-act="fcat" data-cat="transfer" aria-pressed="'+(f.cat==="transfer")+'">Settlements</button></div><div class="search"><input id="f-q" type="search" placeholder="Search notes and titles" value="'+esc(f.q)+'" aria-label="Search expenses"><select id="f-who" aria-label="Paid by"><option value="all">Anyone</option>'+PEOPLE_IDS.map(id=>'<option value="'+id+'"'+(f.who===id?" selected":"")+'>'+esc(pname(id))+'</option>').join("")+'</select></div></div>';
+  let list=tripExpenses(t.id);
+  if(f.cat==="transfer")list=list.filter(e=>e.kind==="transfer");
+  else if(f.cat!=="all")list=list.filter(e=>e.kind!=="transfer"&&catById(e.category).id===f.cat);
+  if(f.who!=="all")list=list.filter(e=>(e.kind==="transfer"?e.from:e.paidBy)===f.who);
+  if(f.q){const q=f.q.toLowerCase();list=list.filter(e=>((e.title||"")+" "+(e.note||"")).toLowerCase().includes(q));}
+  list.sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+  if(!list.length)return h+'<div class="card empty"><h3>No matches</h3><p>'+(tripExpenses(t.id).length?"Try another filter.":"Tap Add expense to log the first one.")+'</p></div>';
+  const sum=list.filter(e=>e.kind!=="transfer").reduce((s,e)=>s+baseAmt(e),0);
+  h+='<p class="small muted" style="margin:0 4px">'+list.length+' item'+(list.length>1?"s":"")+' · <b class="num" style="color:var(--ink)">'+fmt(sum,t.currency)+'</b></p>';
+  const groups={};list.forEach(e=>{(groups[e.date]=groups[e.date]||[]).push(e);});
+  Object.keys(groups).sort().reverse().forEach(d=>{
+    const items=groups[d];const ds=items.filter(e=>e.kind!=="transfer").reduce((s,e)=>s+baseAmt(e),0);
+    const dayNo=t.start?daysBetween(t.start,d)+1:0;
+    h+='<div class="day-group"><h3><span>'+esc(fmtDay(d))+(dayNo>=1&&dayNo<=tripDays(t)?' · Day '+dayNo:"")+'</span><span class="num">'+fmt(ds,t.currency,{whole:true})+'</span></h3><div class="list">';
+    items.forEach(e=>{
+      if(e.kind==="transfer"){
+        h+='<button class="item transfer" data-act="edit-transfer" data-id="'+esc(e.id)+'"><div class="ico" style="color:var(--muted)"><span>'+ICONS.swap.replace("<svg",'<svg width="20" height="20"')+'</span></div><div><div class="ttl">'+esc(pname(e.from))+' paid back '+esc(pname(e.to))+'</div><div class="meta">Settlement'+(e.note?" · "+esc(e.note):"")+'</div></div><div class="amt">'+fmt(baseAmt(e),t.currency)+'</div></button>';
+        return;
+      }
+      const c=catById(e.category);
+      const split=e.split==="W"?"for "+pname("W"):e.split==="P"?"for "+pname("P"):e.split==="custom"?Math.round(Number(e.wPct)||0)+"/"+(100-Math.round(Number(e.wPct)||0))+" split":"split 50/50";
+      h+='<button class="item" data-act="edit-exp" data-id="'+esc(e.id)+'"><div class="ico" style="color:'+catColor(c)+'"><span>'+esc(c.icon||"•")+'</span></div><div><div class="ttl">'+esc(e.title||c.name)+'</div><div class="meta"><span class="who '+esc(e.paidBy)+'">'+esc(pinit(e.paidBy))+'</span> paid · '+esc(split)+(e.note?" · "+esc(e.note):"")+'</div></div><div class="amt">'+fmt(baseAmt(e),t.currency)+(e.currency&&e.currency!==t.currency?'<small>'+fmt(e.amount,e.currency)+'</small>':"")+'</div></button>';
+    });
+    h+='</div></div>';
+  });
+  return h;
+}
+function renderSplit(t,r){
+  const cur=t.currency;
+  let h='<section class="stack">';
+  const owe=r.net.W>0.005?{from:"P",to:"W",amt:r.net.W}:r.net.P>0.005?{from:"W",to:"P",amt:r.net.P}:null;
+  h+='<div class="card"><h2>Settle up</h2>';
+  if(owe){
+    h+='<div class="settle"><div class="person"><div class="avatar '+owe.from+'">'+esc(pinit(owe.from))+'</div>'+esc(pname(owe.from))+'</div><div class="arrow"><span class="small">pays</span></div><div class="person"><div class="avatar '+owe.to+'">'+esc(pinit(owe.to))+'</div>'+esc(pname(owe.to))+'</div></div><p class="big" style="text-align:center;margin:14px 0 4px">'+fmt(owe.amt,cur)+'</p><p class="muted small" style="text-align:center;margin:0 0 14px">'+esc(pname(owe.from))+' owes '+esc(pname(owe.to))+' this amount so you have each paid your fair share.</p>'+(S.readonly?"":'<button class="btn block" data-act="settle" data-from="'+owe.from+'" data-to="'+owe.to+'" data-amt="'+round2(owe.amt)+'">'+ICONS.check+'Record this payment</button>');
+  }else{
+    h+='<p class="big" style="margin:4px 0 6px;font-size:30px">All square</p><p class="muted small" style="margin:0">'+(r.exps.length?"Nobody owes anything right now.":"Add expenses to see who owes whom.")+'</p>';
+  }
+  h+='</div>';
+  h+='<div class="card"><h2>Paid vs fair share</h2>'+whoPaidBars(t,r)+'</div>';
+  h+='<div class="card"><h2>Balance</h2><table class="tbl"><thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Balance</th></tr></thead><tbody>';
+  PEOPLE_IDS.forEach(id=>{const n=r.net[id];h+='<tr><td><span class="who '+id+'">'+esc(pinit(id))+'</span> '+esc(pname(id))+'</td><td>'+fmt(r.paid[id],cur,{whole:true})+'</td><td>'+fmt(r.share[id],cur,{whole:true})+'</td><td class="'+(n>0.005?"pos":n<-0.005?"neg":"")+'">'+(n>0.005?"+":n<-0.005?"−":"")+fmt(Math.abs(n),cur,{whole:true})+'</td></tr>';});
+  h+='</tbody></table>'+(r.settled?'<p class="hint" style="margin-top:10px">Includes '+fmt(r.settled,cur)+' already paid back. Positive balance means that person is owed money.</p>':'<p class="hint" style="margin-top:10px">Positive balance means that person is owed money.</p>')+'</div>';
+  if(!S.readonly)h+='<button class="btn ghost block" data-act="new-transfer">'+ICONS.swap+'Record a payment between you</button>';
+  h+='<button class="btn ghost block" data-act="export">'+ICONS.share+'Save summary image</button>';
+  h+='<button class="btn ghost block" data-act="csv">Export expenses as CSV</button>';
+  h+='</section>';
+  return h;
+}
+
+/* ---------- chart tooltips ---------- */
+function bindCharts(){
+  $$(".chart").forEach(ch=>{
+    const tip=$(".tip",ch);if(!tip)return;
+    const show=el=>{
+      tip.innerHTML=el.getAttribute("data-tip");
+      const svg=$("svg",ch),vb=svg.viewBox.baseVal,rect=svg.getBoundingClientRect(),cr=ch.getBoundingClientRect();
+      let x,y;
+      if(el.hasAttribute("data-tx")){x=rect.left-cr.left+Number(el.dataset.tx)/vb.width*rect.width;y=rect.top-cr.top+Number(el.dataset.ty)/vb.height*rect.height;}
+      else{x=cr.width/2;y=8;}
+      x=Math.max(70,Math.min(cr.width-70,x));
+      tip.style.left=x+"px";tip.style.top=y+"px";tip.classList.add("on");
+      const seg=el.getAttribute("data-seg");
+      if(seg!=null){const wrap=ch.parentElement;$$(".legend li",wrap).forEach(li=>li.classList.toggle("hl",li.dataset.seg===seg));}
+    };
+    const hide=()=>{tip.classList.remove("on");const wrap=ch.parentElement;$$(".legend li.hl",wrap).forEach(li=>li.classList.remove("hl"));};
+    $$("[data-tip]",ch).forEach(el=>{el.addEventListener("pointerenter",()=>show(el));el.addEventListener("click",e=>{e.stopPropagation();show(el);});});
+    ch.addEventListener("pointerleave",hide);
+  });
+}
+document.addEventListener("click",e=>{if(!e.target.closest(".chart"))$$(".tip.on").forEach(t=>t.classList.remove("on"));});
+
+/* ---------- events ---------- */
+app.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const a=b.dataset.act,id=b.dataset.id;
+  const trip=S.data.trips[S.tripId];
+  switch(a){
+    case "settings":return openSettings();
+    case "new-trip":return openTrip(null);
+    case "load-sample":return loadSample();
+    case "open-trip":S.view="trip";S.tripId=id;S.tab="overview";S.filter={cat:"all",who:"all",q:""};render();window.scrollTo(0,0);return;
+    case "home":S.view="home";render();window.scrollTo(0,0);return;
+    case "tab":S.tab=b.dataset.tab;render();window.scrollTo(0,0);return;
+    case "edit-trip":return openTrip(trip);
+    case "add-exp":return openExpense(trip,null);
+    case "edit-exp":return openExpense(trip,S.data.expenses[id]);
+    case "edit-transfer":return openTransfer(trip,S.data.expenses[id]);
+    case "new-transfer":return openTransfer(trip,null);
+    case "settle":return openTransfer(trip,null,{from:b.dataset.from,to:b.dataset.to,amount:Number(b.dataset.amt)});
+    case "fcat":S.filter.cat=b.dataset.cat;render();return;
+    case "export":return exportImage(trip);
+    case "csv":return exportCSV(trip);
+  }
+});
+let qTimer=null;
+app.addEventListener("input",e=>{
+  if(e.target.id==="f-q"){clearTimeout(qTimer);const v=e.target.value;qTimer=setTimeout(()=>{S.filter.q=v;render();const el=$("#f-q");if(el){el.focus();el.setSelectionRange(v.length,v.length);}},250);}
+});
+app.addEventListener("change",e=>{if(e.target.id==="f-who"){S.filter.who=e.target.value;render();}});
+
+/* ---------- sheets ---------- */
+const sheetRoot=$("#sheet-root");
+function openSheet(html,onMount){
+  sheetRoot.innerHTML='<div class="backdrop" data-close><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>'+html+'</div></div>';
+  const bd=$(".backdrop",sheetRoot);
+  bd.addEventListener("click",e=>{if(e.target===bd||e.target.closest("[data-dismiss]"))closeSheet();});
+  document.body.style.overflow="hidden";
+  onMount&&onMount($(".sheet",sheetRoot));
+}
+function closeSheet(){sheetRoot.innerHTML="";document.body.style.overflow="";}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sheetRoot.innerHTML)closeSheet();});
+function confirmSheet(title,msg,okLabel,onOk){
+  openSheet('<h2>'+esc(title)+'</h2><p class="muted">'+esc(msg)+'</p><div class="actions"><button class="btn ghost" data-dismiss>Cancel</button><button class="btn" id="cf-ok" style="background:var(--crit);color:#fff">'+esc(okLabel)+'</button></div>',sh=>{$("#cf-ok",sh).onclick=()=>{closeSheet();onOk();};});
+}
+function segHTML(name,opts,val){return '<div class="seg" data-seg-name="'+name+'">'+opts.map(([v,l])=>'<button type="button" data-v="'+esc(v)+'" aria-pressed="'+(String(val)===String(v))+'">'+esc(l)+'</button>').join("")+'</div>';}
+function bindSeg(sh,name,onChange){const seg=$('[data-seg-name="'+name+'"]',sh);seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;$$("button",seg).forEach(x=>x.setAttribute("aria-pressed",String(x===b)));onChange&&onChange(b.dataset.v);});}
+function segVal(sh,name){const b=$('[data-seg-name="'+name+'"] button[aria-pressed="true"]',sh);return b?b.dataset.v:null;}
+function curOptions(sel){const list=CURRENCIES.includes(sel)||!sel?CURRENCIES:[sel].concat(CURRENCIES);return list.map(c=>'<option'+(c===sel?" selected":"")+'>'+c+'</option>').join("");}
+
+/* Trip form */
+function openTrip(t){
+  const isNew=!t;
+  const today=todayStr();const later=ymd(new Date(Date.now()+4*86400000));
+  t=t?clone(t):{id:uid(),name:"",destination:"",code:"",start:today,end:later,currency:"THB",budget:"",warnAt:80,catCaps:{},createdAt:Date.now()};
+  const cats=cfg().categories;
+  openSheet('<h2>'+(isNew?"New trip":"Edit trip")+'</h2><form class="form" id="trip-form" novalidate>'+
+    '<div class="field"><label for="t-name">Trip name</label><input id="t-name" required maxlength="60" placeholder="e.g. Tokyo in autumn" value="'+esc(t.name)+'"></div>'+
+    '<div class="two"><div class="field"><label for="t-dest">Destination</label><input id="t-dest" maxlength="40" placeholder="Tokyo" value="'+esc(t.destination)+'"></div><div class="field"><label for="t-code">Code</label><input id="t-code" maxlength="4" placeholder="'+esc(codeFor(t))+'" value="'+esc(t.code)+'" style="text-transform:uppercase"></div></div>'+
+    '<div class="two"><div class="field"><label for="t-start">Start</label><input id="t-start" type="date" value="'+esc(t.start)+'"></div><div class="field"><label for="t-end">End</label><input id="t-end" type="date" value="'+esc(t.end)+'"></div></div>'+
+    '<div class="two"><div class="field"><label for="t-cur">Trip currency</label><select id="t-cur">'+curOptions(t.currency)+'</select></div><div class="field"><label for="t-budget">Spending cap</label><input id="t-budget" inputmode="decimal" placeholder="e.g. 30000" value="'+esc(t.budget)+'"></div></div>'+
+    '<div class="field"><span class="flabel">Warn us at</span>'+segHTML("warn",[[60,"60%"],[70,"70%"],[80,"80%"],[90,"90%"]],t.warnAt||80)+'<p class="hint">You get a warning when spending passes this share of the cap, and an alert when it goes over.</p></div>'+
+    '<details'+(Object.keys(t.catCaps||{}).length?" open":"")+'><summary class="small" style="font-weight:700;cursor:pointer;padding:4px 0">Category caps (optional)</summary><div class="stack" style="gap:8px;margin-top:10px">'+cats.map(c=>'<div class="two" style="align-items:center"><label for="cap-'+esc(c.id)+'" class="small">'+esc(c.icon||"")+' '+esc(c.name)+'</label><input id="cap-'+esc(c.id)+'" data-cap="'+esc(c.id)+'" inputmode="decimal" placeholder="No cap" value="'+esc((t.catCaps||{})[c.id]||"")+'" style="border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 10px"></div>').join("")+'</div></details>'+
+    '<p class="hint" id="t-err" style="color:var(--crit)"></p>'+
+    '<div class="actions"><button type="button" class="btn ghost" data-dismiss>Cancel</button><button class="btn" type="submit">'+(isNew?"Create trip":"Save")+'</button></div>'+
+    (isNew?"":'<button type="button" class="btn danger block" id="t-del">'+ICONS.trash+'Delete trip</button>')+
+    '</form>',sh=>{
+      bindSeg(sh,"warn");
+      if(isNew)setTimeout(()=>$("#t-name",sh).focus(),250);
+      $("#trip-form",sh).addEventListener("submit",ev=>{
+        ev.preventDefault();
+        const name=$("#t-name",sh).value.trim();
+        const start=$("#t-start",sh).value,end=$("#t-end",sh).value;
+        const budgetRaw=$("#t-budget",sh).value.trim();const budget=budgetRaw?parseNum(budgetRaw):0;
+        if(!name)return $("#t-err",sh).textContent="Give the trip a name.";
+        if(!start||!end)return $("#t-err",sh).textContent="Pick both a start and an end date.";
+        if(end<start)return $("#t-err",sh).textContent="The end date is before the start date.";
+        if(budgetRaw&&(!isFinite(budget)||budget<0))return $("#t-err",sh).textContent="The spending cap must be a number, like 30000.";
+        t.name=name;t.destination=$("#t-dest",sh).value.trim();t.code=$("#t-code",sh).value.trim().toUpperCase();
+        t.start=start;t.end=end;t.currency=$("#t-cur",sh).value;t.budget=budget||0;t.warnAt=Number(segVal(sh,"warn"))||80;
+        const caps={};$$("[data-cap]",sh).forEach(i=>{const v=parseNum(i.value);if(v>0)caps[i.dataset.cap]=v;});t.catCaps=caps;
+        closeSheet();Store.saveTrip(t);
+        if(isNew){S.view="trip";S.tripId=t.id;S.tab="overview";render();window.scrollTo(0,0);toast("Trip created. Add your first expense.","good");}
+        else toast("Trip saved","good");
+      });
+      const del=$("#t-del",sh);
+      if(del)del.onclick=()=>confirmSheet("Delete this trip?","“"+t.name+"” and all of its expenses will be removed for both of you. This can't be undone.","Delete trip",()=>{S.view="home";Store.deleteTrip(t.id);toast("Trip deleted");});
+    });
+}
+
+/* Expense form */
+function openExpense(trip,e){
+  const isNew=!e;
+  const cats=cfg().categories;
+  let def=todayStr();
+  if(S.lastDate&&S.lastDate>=trip.start&&S.lastDate<=trip.end)def=S.lastDate;
+  else if(def<trip.start)def=trip.start;else if(def>trip.end)def=trip.end;
+  e=e?clone(e):{id:uid(),tripId:trip.id,kind:"expense",title:"",amount:"",currency:trip.currency,rate:1,category:cats[0].id,date:def,paidBy:S.me,split:"equal",wPct:50,note:"",createdAt:Date.now()};
+  const rates=trip.rates||{};
+  openSheet('<h2>'+(isNew?"Add expense":"Edit expense")+'</h2><form class="form" id="exp-form" novalidate>'+
+    '<div class="field"><label for="e-amt">Amount</label><div class="amount-row"><input id="e-amt" inputmode="decimal" placeholder="0" value="'+esc(e.amount)+'" autocomplete="off"><select id="e-cur" aria-label="Currency">'+curOptions(e.currency||trip.currency)+'</select></div></div>'+
+    '<div class="field" id="rate-field" hidden><label for="e-rate">Exchange rate</label><div style="display:flex;align-items:center;gap:8px"><span class="small muted" id="rate-l" style="white-space:nowrap"></span><input id="e-rate" inputmode="decimal" value="'+esc(e.currency!==trip.currency?e.rate:"")+'"><span class="small muted">'+esc(trip.currency)+'</span></div><p class="hint" id="rate-h"></p></div>'+
+    '<div class="field"><label for="e-title">What for</label><input id="e-title" maxlength="80" placeholder="e.g. Khao soi lunch" value="'+esc(e.title)+'"></div>'+
+    '<div class="field"><span class="flabel">Category</span><div class="catpick" id="e-cat">'+cats.map(c=>'<button type="button" data-v="'+esc(c.id)+'" aria-pressed="'+(catById(e.category).id===c.id)+'"><span class="sw" style="background:'+catColor(c)+'"></span>'+esc(c.icon||"")+' '+esc(c.name)+'</button>').join("")+'</div></div>'+
+    '<div class="field"><label for="e-date">Date</label><input id="e-date" type="date" value="'+esc(e.date)+'"></div>'+
+    '<div class="field"><span class="flabel">Paid by</span>'+segHTML("paid",PEOPLE_IDS.map(id=>[id,pname(id)]),e.paidBy)+'</div>'+
+    '<div class="field"><span class="flabel">Split <span style="text-transform:none;letter-spacing:0;font-weight:500">· '+esc(pinit("W"))+' = '+esc(pname("W"))+', '+esc(pinit("P"))+' = '+esc(pname("P"))+'</span></span>'+segHTML("split",[["equal","50 / 50"],["W",pinit("W")+" only"],["P",pinit("P")+" only"],["custom","Custom"]],e.split||"equal")+
+      '<div id="custom-split" hidden style="margin-top:6px"><input type="range" id="e-wpct" min="0" max="100" step="5" value="'+esc(e.wPct??50)+'" aria-label="Share for '+esc(pname("W"))+'"><p class="hint" id="wpct-l"></p></div></div>'+
+    '<div class="field"><label for="e-note">Note</label><textarea id="e-note" maxlength="200" placeholder="Optional">'+esc(e.note)+'</textarea></div>'+
+    '<p class="hint" id="e-err" style="color:var(--crit)"></p>'+
+    '<div class="actions"><button type="button" class="btn ghost" data-dismiss>Cancel</button><button class="btn" type="submit">'+(isNew?"Add":"Save")+'</button></div>'+
+    (isNew?"":'<button type="button" class="btn danger block" id="e-del">'+ICONS.trash+'Delete expense</button>')+
+    '</form>',sh=>{
+      if(isNew)setTimeout(()=>$("#e-amt",sh).focus(),250);
+      const curSel=$("#e-cur",sh),rf=$("#rate-field",sh),rateIn=$("#e-rate",sh);
+      const updRate=()=>{
+        const c=curSel.value;rf.hidden=c===trip.currency;
+        $("#rate-l",sh).textContent="1 "+c+" =";
+        if(c!==trip.currency&&!rateIn.value&&rates[c])rateIn.value=rates[c];
+        const a=parseNum($("#e-amt",sh).value),r=parseNum(rateIn.value);
+        $("#rate-h",sh).textContent=(a>0&&r>0)?"≈ "+fmt(a*r,trip.currency)+" in trip currency":"Enter how many "+trip.currency+" one "+c+" is worth.";
+      };
+      curSel.onchange=updRate;rateIn.oninput=updRate;$("#e-amt",sh).addEventListener("input",updRate);updRate();
+      $("#e-cat",sh).addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;$$("#e-cat button",sh).forEach(x=>x.setAttribute("aria-pressed",String(x===b)));});
+      bindSeg(sh,"paid");
+      const cs=$("#custom-split",sh),wp=$("#e-wpct",sh);
+      const updW=()=>{const v=Number(wp.value);$("#wpct-l",sh).textContent=pname("W")+" "+v+"% · "+pname("P")+" "+(100-v)+"%";};
+      wp.oninput=updW;updW();cs.hidden=(e.split!=="custom");
+      bindSeg(sh,"split",v=>{cs.hidden=v!=="custom";});
+      $("#exp-form",sh).addEventListener("submit",async ev=>{
+        ev.preventDefault();
+        const amt=parseNum($("#e-amt",sh).value);
+        if(!(amt>0))return $("#e-err",sh).textContent="Enter an amount above zero.";
+        const c=curSel.value;let rate=1;
+        if(c!==trip.currency){rate=parseNum(rateIn.value);if(!(rate>0))return $("#e-err",sh).textContent="Enter the exchange rate for "+c+".";}
+        const date=$("#e-date",sh).value;if(!date)return $("#e-err",sh).textContent="Pick a date.";
+        const before=calc(trip);
+        const prevCat=isNew?null:catById(e.category).id,prevAmt=isNew?0:baseAmt(e);
+        e.amount=amt;e.currency=c;e.rate=rate;e.title=$("#e-title",sh).value.trim();
+        e.category=($('#e-cat button[aria-pressed="true"]',sh)||{}).dataset?.v||cats[0].id;
+        e.date=date;e.paidBy=segVal(sh,"paid")||S.me;e.split=segVal(sh,"split")||"equal";e.wPct=Number(wp.value);e.note=$("#e-note",sh).value.trim();
+        S.lastDate=date;
+        closeSheet();
+        await Store.saveExpense(e);
+        if(c!==trip.currency&&(trip.rates||{})[c]!==rate){const t2=clone(S.data.trips[trip.id]||trip);t2.rates=Object.assign({},t2.rates||{},{[c]:rate});Store.saveTrip(t2);}
+        budgetCheck(S.data.trips[trip.id]||trip,before,e,prevCat,prevAmt,isNew);
+      });
+      const del=$("#e-del",sh);
+      if(del)del.onclick=()=>confirmSheet("Delete this expense?","“"+(e.title||catById(e.category).name)+"” for "+fmt(baseAmt(e),trip.currency)+" will be removed.","Delete",()=>{Store.deleteExpense(e.id);toast("Expense deleted");});
+    });
+}
+function budgetCheck(trip,before,e,prevCat,prevAmt,isNew){
+  const after=calc(trip);
+  if(after.budget>0){
+    if(after.pct>=100&&before.pct<100){toast("Over budget! You've spent "+fmt(after.total,trip.currency,{whole:true})+" of the "+fmt(after.budget,trip.currency,{whole:true})+" cap.","crit",6000);return;}
+    if(after.pct>=after.warnAt&&before.pct<after.warnAt){toast("Heads up: "+Math.round(after.pct)+"% of the budget is used. "+fmt(after.left,trip.currency,{whole:true})+" left.","warn",6000);return;}
+  }
+  const cap=Number((trip.catCaps||{})[catById(e.category).id])||0;
+  if(cap>0){
+    const cid=catById(e.category).id;const b=before.byCat[cid]||0,a=after.byCat[cid]||0;
+    if(a>=cap&&b<cap){toast(catById(e.category).name+" is over its "+fmt(cap,trip.currency,{whole:true})+" cap.","crit",5000);return;}
+    const w=Number(trip.warnAt)||80;if(a/cap*100>=w&&b/cap*100<w){toast(catById(e.category).name+" has used "+Math.round(a/cap*100)+"% of its cap.","warn",5000);return;}
+  }
+  toast(isNew?"Expense added":"Expense saved","good",1800);
+}
+
+/* Transfer (settlement) form */
+function openTransfer(trip,tr,preset){
+  const isNew=!tr;
+  tr=tr?clone(tr):Object.assign({id:uid(),tripId:trip.id,kind:"transfer",from:"P",to:"W",amount:"",currency:trip.currency,rate:1,date:todayStr()<trip.start?trip.start:todayStr()>trip.end?trip.end:todayStr(),note:"",createdAt:Date.now()},preset||{});
+  openSheet('<h2>'+(isNew?"Record a payment":"Edit payment")+'</h2><form class="form" id="tr-form" novalidate><p class="hint">Use this when one of you pays the other back. It changes who owes whom but is not counted as trip spending.</p>'+
+    '<div class="field"><span class="flabel">Who paid</span>'+segHTML("from",PEOPLE_IDS.map(id=>[id,pname(id)]),tr.from)+'</div>'+
+    '<div class="field"><label for="tr-amt">Amount ('+esc(trip.currency)+')</label><input id="tr-amt" inputmode="decimal" value="'+esc(tr.amount)+'" style="font-size:24px;font-weight:800"></div>'+
+    '<div class="field"><label for="tr-date">Date</label><input id="tr-date" type="date" value="'+esc(tr.date)+'"></div>'+
+    '<div class="field"><label for="tr-note">Note</label><input id="tr-note" maxlength="80" placeholder="e.g. PromptPay" value="'+esc(tr.note)+'"></div>'+
+    '<p class="hint" id="tr-err" style="color:var(--crit)"></p>'+
+    '<div class="actions"><button type="button" class="btn ghost" data-dismiss>Cancel</button><button class="btn" type="submit">Save</button></div>'+
+    (isNew?"":'<button type="button" class="btn danger block" id="tr-del">'+ICONS.trash+'Delete payment</button>')+'</form>',sh=>{
+      bindSeg(sh,"from");
+      $("#tr-form",sh).addEventListener("submit",ev=>{
+        ev.preventDefault();const a=parseNum($("#tr-amt",sh).value);
+        if(!(a>0))return $("#tr-err",sh).textContent="Enter an amount above zero.";
+        tr.from=segVal(sh,"from");tr.to=tr.from==="W"?"P":"W";tr.amount=a;tr.currency=trip.currency;tr.rate=1;tr.date=$("#tr-date",sh).value||tr.date;tr.note=$("#tr-note",sh).value.trim();
+        closeSheet();Store.saveExpense(tr);toast("Payment recorded","good");
+      });
+      const del=$("#tr-del",sh);if(del)del.onclick=()=>confirmSheet("Delete this payment?","The balance between you will go back to what it was.","Delete",()=>{Store.deleteExpense(tr.id);});
+    });
+}
+
+/* Settings */
+function openSettings(){
+  const c=clone(cfg());
+  const catRows=()=>c.categories.map((k,i)=>'<div class="cat-edit" data-i="'+i+'"><input class="ic" aria-label="Icon" maxlength="4" value="'+esc(k.icon||"")+'"><input class="nm" aria-label="Category name" maxlength="30" value="'+esc(k.name)+'"><button type="button" class="icon-btn" data-del-cat="'+i+'" aria-label="Delete '+esc(k.name)+'" '+(k.id==="other"?"disabled style=\"opacity:.3\"":"")+'>'+ICONS.trash+'</button><div class="swatches">'+CAT_LIGHT.map((_,j)=>'<button type="button" data-sw="'+j+'" aria-label="Colour '+(j+1)+'" aria-pressed="'+((k.color%8)===j)+'" style="background:var(--c'+j+')"></button>').join("")+'</div></div>').join("");
+  const syncText=S.mode==="cloud"?(S.readonly?"You have view-only access. Ask the owner to invite you as an Editor so you can add expenses.":"Shared: every change syncs live to everyone this page is shared with as an Editor."):"Saved in this browser only. Open the shared link to sync between two phones.";
+  openSheet('<h2>Settings</h2><div class="form">'+
+    '<div class="two"><div class="field"><label for="s-w">Traveller 1</label><input id="s-w" maxlength="30" value="'+esc(c.people.W.name)+'"></div><div class="field"><label for="s-p">Traveller 2</label><input id="s-p" maxlength="30" value="'+esc(c.people.P.name)+'"></div></div>'+
+    '<div class="field"><span class="flabel">This phone belongs to</span>'+segHTML("me",PEOPLE_IDS.map(id=>[id,pname(id)]),S.me)+'<p class="hint">New expenses default to this person as the payer.</p></div>'+
+    '<hr class="sep"><div class="field"><span class="flabel">Categories</span><div id="cat-list" class="stack" style="gap:6px">'+catRows()+'</div><button type="button" class="btn ghost" id="add-cat">'+ICONS.plus+'Add category</button></div>'+
+    '<hr class="sep"><div class="field"><span class="flabel">Sync</span><p class="hint">'+syncBadge()+'<br>'+esc(syncText)+'</p></div>'+
+    '<div class="two"><button type="button" class="btn ghost" id="bk-exp">Back up data</button><label class="btn ghost" for="bk-imp" style="cursor:pointer">Restore backup</label><input type="file" id="bk-imp" accept="application/json,.json" hidden></div>'+
+    '<div class="actions"><button type="button" class="btn ghost" data-dismiss>Close</button><button type="button" class="btn" id="s-save"'+(S.readonly?" disabled":"")+'>Save</button></div></div>',sh=>{
+      bindSeg(sh,"me");
+      const list=$("#cat-list",sh);
+      const pull=()=>{$$(".cat-edit",list).forEach(row=>{const k=c.categories[Number(row.dataset.i)];k.icon=$(".ic",row).value.trim();k.name=$(".nm",row).value.trim()||k.name;});};
+      const redraw=()=>{list.innerHTML=catRows();};
+      list.addEventListener("click",ev=>{
+        const sw=ev.target.closest("[data-sw]");
+        if(sw){pull();const i=Number(sw.closest(".cat-edit").dataset.i);c.categories[i].color=Number(sw.dataset.sw);redraw();return;}
+        const d=ev.target.closest("[data-del-cat]");
+        if(d&&!d.disabled){pull();const i=Number(d.dataset.delCat);const k=c.categories[i];const used=Object.values(S.data.expenses).filter(x=>x.category===k.id).length;
+          if(used&&!d.dataset.armed){d.dataset.armed="1";d.style.color="var(--crit)";toast(used+" expense"+(used>1?"s":"")+" use “"+k.name+"”. They will move to Other. Tap delete again to confirm.","warn",4500);return;}
+          c.categories.splice(i,1);redraw();}
+      });
+      $("#add-cat",sh).onclick=()=>{pull();const used=c.categories.map(k=>k.color%8);let col=0;for(let j=0;j<8;j++){if(!used.includes(j)){col=j;break;}}c.categories.splice(Math.max(0,c.categories.length-1),0,{id:"c"+uid(),name:"New category",icon:"✈️",color:col});redraw();const rows=$$(".cat-edit .nm",list);const el=rows[rows.length-2]||rows[0];el&&el.select();};
+      $("#s-save",sh).onclick=()=>{
+        pull();
+        S.me=segVal(sh,"me")||"W";lsSet(LS_ME,S.me);
+        c.people.W.name=$("#s-w",sh).value.trim()||"Wiphoosana";c.people.P.name=$("#s-p",sh).value.trim()||"Phanthipha";
+        if(!c.categories.find(k=>k.id==="other"))c.categories.push({id:"other",name:"Other",icon:"📌",color:5});
+        closeSheet();Store.saveConfig(c);toast("Settings saved","good");
+      };
+      $("#bk-exp",sh).onclick=()=>{const blob=new Blob([JSON.stringify({app:"trip-wallet",version:1,exportedAt:new Date().toISOString(),data:S.data},null,2)],{type:"application/json"});saveFile("trip-wallet-backup-"+todayStr()+".json",blob);};
+      $("#bk-imp",sh).onchange=async ev=>{
+        const f=ev.target.files[0];if(!f)return;
+        try{const j=JSON.parse(await f.text());const d=j.data||j;if(!d.trips)throw new Error("no trips");
+          closeSheet();
+          if(d.config)await Store.saveConfig(d.config);
+          for(const t of Object.values(d.trips)){await Store.saveTrip(t);}
+          for(const x of Object.values(d.expenses||{})){await Store.saveExpense(x);}
+          toast("Backup restored: "+Object.keys(d.trips).length+" trip(s)","good");
+        }catch(err){toast("That file isn't a Trip Wallet backup.","crit");}
+      };
+    });
+}
+
+/* ---------- toast ---------- */
+function toast(msg,type="",ms=2600){
+  const el=document.createElement("div");el.className="toast "+type;
+  el.innerHTML=(type==="crit"?ICONS.stop:type==="warn"?ICONS.warn:type==="good"?ICONS.check:ICONS.info)+'<div>'+esc(msg)+'</div>';
+  $("#toast").appendChild(el);el.onclick=()=>el.remove();
+  setTimeout(()=>el.remove(),ms);
+}
+
+/* ---------- files ---------- */
+async function saveFile(filename,blob){
+  let dl=null;
+  if(window.claude&&typeof window.claude.use==="function"){try{dl=await window.claude.use("downloads");}catch(e){dl=null;}}
+  if(dl){
+    try{const r=await dl.save({filename,data:blob});if(r&&r.status==="saved")toast("Saved "+filename,"good");return true;}
+    catch(err){if(err&&err.code==="declined")return false;if(err&&err.code==="rate_limited"){toast("A save is already open. Try again in a moment.","warn");return false;}}
+  }
+  try{const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);return true;}
+  catch(e){toast("This view can't save files. Press and hold the image instead.","warn");return false;}
+}
+function exportCSV(trip){
+  const rows=[["Date","Type","Title","Category","Amount","Currency","Rate","Amount ("+trip.currency+")","Paid by","Split","Share "+pname("W"),"Share "+pname("P"),"Note"]];
+  tripExpenses(trip.id).sort((a,b)=>(a.date||"").localeCompare(b.date||"")).forEach(e=>{
+    const a=baseAmt(e);
+    if(e.kind==="transfer")rows.push([e.date,"Payment",pname(e.from)+" → "+pname(e.to),"",e.amount,trip.currency,1,round2(a),pname(e.from),"","","",e.note||""]);
+    else{const ws=wShare(e);rows.push([e.date,"Expense",e.title||"",catById(e.category).name,e.amount,e.currency||trip.currency,e.rate||1,round2(a),pname(e.paidBy),e.split==="custom"?(e.wPct+"/"+(100-e.wPct)):e.split==="W"?pname("W")+" only":e.split==="P"?pname("P")+" only":"50/50",round2(a*ws),round2(a*(1-ws)),e.note||""]);}
+  });
+  const csv="﻿"+rows.map(r=>r.map(v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(",")).join("\n");
+  saveFile(slug(trip.name)+"-expenses.csv",new Blob([csv],{type:"text/csv"}));
+}
+function slug(s){return (s||"trip").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"trip";}
+
+/* ---------- summary image (canvas) ---------- */
+async function exportImage(trip){
+  if(!trip)return;
+  openSheet('<h2>Summary image</h2><p class="muted small" style="margin-top:-6px">Preparing…</p>');
+  try{await Promise.all(["800 40px Manrope","600 20px Manrope","400 20px Manrope","400 60px 'Instrument Serif'","italic 400 60px 'Instrument Serif'","600 20px 'Noto Sans Thai'"].map(f=>document.fonts.load(f)));}catch(e){}
+  const cv=drawSummary(trip);
+  const url=cv.toDataURL("image/png");
+  const blob=await new Promise(res=>cv.toBlob(res,"image/png"));
+  const fname=slug(trip.name)+"-summary.png";
+  openSheet('<h2>Summary image</h2><img class="img-preview" src="'+url+'" alt="Spending summary for '+esc(trip.name)+'"><p class="hint" style="margin:10px 0">On a phone you can also press and hold the image and choose <b>Save to Photos</b>.</p><div class="actions"><button class="btn ghost" data-dismiss>Close</button><button class="btn" id="img-save">'+ICONS.share+'Save image</button></div>',sh=>{
+    $("#img-save",sh).onclick=()=>saveFile(fname,blob);
+  });
+}
+function drawSummary(trip){
+  const r=calc(trip),cur=trip.currency,c=cfg();
+  const W=1080,H=2600,cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const x=cv.getContext("2d");
+  const INK="#13232f",MUT="#5b6a72",FAINT="#8d9aa0",LINE="#dbe2e1",ACC="#0e6b73",BG="#eef2f1";
+  const F=(w,s,fam)=>w+" "+s+"px "+(fam||"Manrope, 'Noto Sans Thai', sans-serif");
+  const SERIF="'Instrument Serif', 'Noto Sans Thai', Georgia, serif";
+  const M=56,cw=W-2*M;
+  // header band
+  x.save();rr(x,M,M,cw,330,40);x.clip();x.fillStyle=ACC;x.fillRect(M,M,cw,330);
+  // faint route arc
+  x.strokeStyle="rgba(255,255,255,.18)";x.lineWidth=3;x.setLineDash([10,12]);x.beginPath();x.moveTo(M+40,M+300);x.quadraticCurveTo(W/2,M+40,W-M-40,M+260);x.stroke();x.setLineDash([]);
+  x.restore();
+  x.fillStyle="rgba(255,255,255,.75)";x.font=F(700,22);x.textBaseline="alphabetic";
+  spaced(x,"TRIP WALLET",M+56,M+78,4);
+  x.textAlign="right";spaced(x,cur,W-M-56,M+78,4,true);x.textAlign="left";
+  x.fillStyle="#fff";x.font=F(800,112);x.fillText(codeFor(trip),M+50,M+200);
+  let fs=58;do{x.font="italic 400 "+fs+"px "+SERIF;fs-=2;}while(fs>=38&&x.measureText(trip.name).width>cw-112);fitText(x,trip.name,M+56,M+272,cw-112);
+  x.fillStyle="rgba(255,255,255,.8)";x.font=F(600,24);
+  x.textAlign="right";x.fillText(fmtDate(trip.start)+" → "+fmtDate(trip.end,true)+" · "+r.days+" days",W-M-56,M+200);x.textAlign="left";
+  // perforation
+  const py=M+330;x.fillStyle=BG;x.beginPath();x.arc(M,py,26,0,Math.PI*2);x.arc(W-M,py,26,0,Math.PI*2);x.fill();
+  x.strokeStyle=LINE;x.lineWidth=3;x.setLineDash([12,12]);x.beginPath();x.moveTo(M+40,py);x.lineTo(W-M-40,py);x.stroke();x.setLineDash([]);
+  // totals
+  let y=py+80;const L=M+56,Rr=W-M-56;
+  x.fillStyle=FAINT;x.font=F(700,20);spaced(x,"TOTAL SPENT",L,y,3);
+  y+=78;x.fillStyle=INK;x.font=F(800,84);x.fillText(fmt(r.total,cur),L-4,y);
+  // status pill
+  const stc={good:["#e2f3e2","#0a8f0a","On track"],warn:["#fdf1d6","#9a6600","Near limit"],crit:["#fbe4e4","#c23030","Over budget"],none:["#f0f3f3",MUT,"No cap set"]}[r.status];
+  x.font=F(800,24);const pw=x.measureText(stc[2]).width+48;rr(x,Rr-pw,y-56,pw,52,26);x.fillStyle=stc[0];x.fill();x.fillStyle=stc[1];x.textAlign="center";x.fillText(stc[2],Rr-pw/2,y-21);x.textAlign="left";
+  y+=46;x.fillStyle=MUT;x.font=F(500,26);
+  x.fillText(r.budget?(Math.round(r.pct)+"% of "+fmt(r.budget,cur,{whole:true})+" cap · "+(r.left>=0?fmt(r.left,cur,{whole:true})+" left":fmt(-r.left,cur,{whole:true})+" over")):"No spending cap set",L,y);
+  if(r.budget){y+=30;rr(x,L,y,Rr-L,18,9);x.fillStyle="#eef2f1";x.fill();const fw=Math.max(18,(Rr-L)*Math.min(1,r.pct/100));rr(x,L,y,fw,18,9);x.fillStyle=r.status==="crit"?"#d03b3b":r.status==="warn"?"#fab219":ACC;x.fill();
+    const wx=L+(Rr-L)*r.warnAt/100;x.fillStyle="rgba(19,35,47,.35)";x.fillRect(wx-1.5,y-6,3,30);y+=18;}
+  // donut + legend
+  y+=70;
+  const rows=[];Object.entries(r.byCat).forEach(([id,v])=>{const k=catById(id);const m=rows.find(z=>z.c.id===k.id);if(m)m.v+=v;else rows.push({c:k,v});});rows.sort((a,b)=>b.v-a.v);
+  const shown=rows.slice(0,7);if(rows.length>7){shown.push({c:{name:"Others",icon:"",color:-1},v:rows.slice(7).reduce((s,z)=>s+z.v,0)});}
+  const cx=L+150,cy=y+150,R=128;
+  if(r.total>0){let a0=-Math.PI/2;shown.forEach(z=>{const a1=a0+z.v/r.total*Math.PI*2;x.beginPath();x.strokeStyle=z.c.color<0?"#b5bfc3":CAT_LIGHT[z.c.color%8];x.lineWidth=46;x.arc(cx,cy,R,a0+(shown.length>1?0.012:0),a1-(shown.length>1?0.012:0));x.stroke();a0=a1;});}
+  else{x.beginPath();x.strokeStyle="#eef2f1";x.lineWidth=46;x.arc(cx,cy,R,0,Math.PI*2);x.stroke();}
+  x.textAlign="center";x.fillStyle=FAINT;x.font=F(700,18);spaced(x,"EXPENSES",cx,cy-8,3,false,true);x.fillStyle=INK;x.font=F(800,40);x.fillText(String(r.exps.length),cx,cy+36);x.textAlign="left";
+  let ly=y+18;const lx=L+340;
+  shown.forEach(z=>{
+    rr(x,lx,ly-20,22,22,6);x.fillStyle=z.c.color<0?"#b5bfc3":CAT_LIGHT[z.c.color%8];x.fill();
+    x.fillStyle=INK;x.font=F(600,26);fitText(x,((z.c.icon?z.c.icon+" ":"")+z.c.name),lx+38,ly,Rr-lx-260);
+    x.textAlign="right";x.font=F(800,26);x.fillText(fmt(z.v,cur,{whole:true}),Rr-80,ly);x.fillStyle=MUT;x.font=F(500,22);x.fillText(Math.round(z.v/(r.total||1)*100)+"%",Rr,ly);x.textAlign="left";
+    ly+=42;
+  });
+  if(!shown.length){x.fillStyle=MUT;x.font=F(500,26);x.fillText("No expenses yet",lx,ly);}
+  y=Math.max(cy+R+70,ly+20);
+  // divider
+  x.strokeStyle=LINE;x.lineWidth=2;x.beginPath();x.moveTo(L,y);x.lineTo(Rr,y);x.stroke();
+  y+=56;
+  // people
+  const colW=(Rr-L)/2;
+  PEOPLE_IDS.forEach((id,i)=>{
+    const px=L+i*colW;
+    x.beginPath();x.arc(px+28,y-10,28,0,Math.PI*2);x.fillStyle=id==="W"?"#0e6b73":"#6250d6";x.fill();
+    x.fillStyle="#fff";x.font=F(800,26);x.textAlign="center";x.fillText(pinit(id),px+28,y-1);x.textAlign="left";
+    x.fillStyle=MUT;x.font=F(600,22);fitText(x,pname(id)+" paid",px+72,y-18,colW-90);
+    x.fillStyle=INK;x.font=F(800,32);x.fillText(fmt(r.paid[id],cur,{whole:true}),px+72,y+18);
+  });
+  y+=80;
+  // settle
+  const owe=r.net.W>0.005?{from:"P",to:"W",amt:r.net.W}:r.net.P>0.005?{from:"W",to:"P",amt:r.net.P}:null;
+  rr(x,L,y,Rr-L,92,22);x.fillStyle="#eef5f5";x.fill();
+  x.fillStyle=ACC;x.font=F(700,28);
+  const txt=owe?(pname(owe.from)+" pays "+pname(owe.to)+" "+fmt(owe.amt,cur)):"All square, nobody owes anything";
+  x.textAlign="center";fitText(x,txt,(L+Rr)/2,y+57,Rr-L-40,true);x.textAlign="left";
+  // compose onto a card sized to the content (at least 4:5)
+  const OH=Math.max(1350,Math.ceil(y+92+110+M));
+  const out=document.createElement("canvas");out.width=W;out.height=OH;const o=out.getContext("2d");
+  o.fillStyle=BG;o.fillRect(0,0,W,OH);rr(o,M,M,cw,OH-2*M,40);o.fillStyle="#fff";o.fill();
+  o.drawImage(cv,0,0);
+  o.fillStyle=FAINT;o.font=F(500,20);o.textAlign="center";
+  o.fillText(c.people.W.name+" & "+c.people.P.name+" · made "+fmtDate(todayStr(),true),W/2,OH-M-40);
+  return out;
+}
+function rr(x,X,Y,w,h,r){r=Math.min(r,h/2,w/2);x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
+function spaced(x,s,X,Y,sp,right,center){
+  if("letterSpacing" in x){x.letterSpacing=sp+"px";x.fillText(s,X,Y);x.letterSpacing="0px";return;}
+  x.fillText(s,X,Y);
+}
+function fitText(x,s,X,Y,max,center){
+  s=String(s);if(x.measureText(s).width<=max){x.fillText(s,X,Y);return;}
+  while(s.length>1&&x.measureText(s+"…").width>max)s=s.slice(0,-1);
+  x.fillText(s+"…",X,Y);
+}
+
+/* ---------- example trip ---------- */
+//SAMPLE-START
+function makeSample(today){
+  const pdx=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);};
+  const f=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const t0=pdx(today);const start=new Date(t0);start.setDate(start.getDate()-3);const end=new Date(t0);end.setDate(end.getDate()+1);
+  const day=n=>{const d=new Date(start);d.setDate(d.getDate()+n);return f(d);};
+  const tripId="example-cnx";
+  const trip={id:tripId,name:"Chiang Mai long weekend (example)",destination:"Chiang Mai",code:"CNX",start:f(start),end:f(end),currency:"THB",budget:18000,warnAt:80,catCaps:{food:4000},rates:{USD:33.5},createdAt:1,updatedAt:1};
+  const E=[
+    [0,"Flights BKK → CNX","transport",2780,"W","equal"],
+    [0,"Old City guesthouse, 4 nights","stay",3600,"P","equal"],
+    [0,"Khao soi at Mae Sai","food",180,"W","equal"],
+    [0,"Grab from airport","transport",160,"P","equal"],
+    [1,"Elephant sanctuary day trip","activity",65,"W","equal","USD"],
+    [1,"Night bazaar dinner","food",620,"P","equal"],
+    [1,"Silver earrings","shopping",850,"P","P"],
+    [2,"Doi Suthep songthaew","transport",400,"W","equal"],
+    [2,"Café hopping in Nimman","food",540,"W","equal"],
+    [2,"Thai cooking class","activity",1800,"P","equal"],
+    [3,"Sunday walking street snacks","food",460,"P","equal"],
+    [3,"Massage at Lila","activity",1200,"W","custom",null,40],
+    [3,"Hand-woven bag","shopping",690,"W","W"]
+  ];
+  const expenses=E.map((e,i)=>({id:"ex"+(i+1),tripId,kind:"expense",title:e[1],category:e[2],amount:e[3],currency:e[6]||"THB",rate:e[6]==="USD"?33.5:1,date:day(e[0]),paidBy:e[4],split:e[5],wPct:e[7]||50,note:"",createdAt:i+1,updatedAt:i+1,by:"W"}));
+  expenses.push({id:"ex-pay1",tripId,kind:"transfer",from:"P",to:"W",amount:1000,currency:"THB",rate:1,date:day(2),note:"PromptPay",createdAt:20,updatedAt:20,by:"P"});
+  return {trip,expenses};
+}
+//SAMPLE-END
+async function loadSample(){
+  const s=makeSample(todayStr());
+  await Store.saveTrip(s.trip);
+  for(const e of s.expenses){await Store.saveExpense(e);}
+  toast("Example trip added. Delete it from Edit trip when you're done.","good",4000);
+}
+
+boot();
+</script>
+</body>
+</html>
